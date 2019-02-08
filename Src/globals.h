@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include "usbd_def.h"
 
+extern volatile int power; //loudness of music. controlled in main, used in timer callback
+extern const int maxPower;
+
 extern volatile uint8_t nextBuffer;
 extern volatile uint8_t currentBuffer;
 

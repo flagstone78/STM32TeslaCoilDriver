@@ -48,7 +48,7 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal.h" 
+#include "stm32f1xx_hal.h"
 #include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
@@ -57,6 +57,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim2;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -66,8 +67,10 @@ TIM_HandleTypeDef htim1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_TIM1_Init(void);                                    
+static void MX_TIM1_Init(void);
+static void MX_TIM2_Init(void);                                    
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+                                
                                 
 
 /* USER CODE BEGIN PFP */
@@ -76,12 +79,13 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
-const int periodReset = 3600;//32;
-const int powerReset = periodReset/2; //16;
-
 int periodLimitLow = 25;     //2.88 MHz
 int periodLimitHigh = 60000; //144; //500  kHz
+const int periodReset = 32;
+
+const int maxPower = 128;
+const int powerStep = 8;
+const int powerReset = 0;
 
 int powerLimitHighFrac = 50; // max fraction (x/100) of the duty cycle to be high
 
@@ -122,7 +126,8 @@ void handleButtons(void){
 		if(buttonInput & GPIO_PIN_6){ //if released
 			
 		} else { //pressed
-			power -= 1;
+			if(power - powerStep > powerStep){power -= powerStep;}
+			else{power = powerStep;}
 		}
 	}
 	
@@ -138,7 +143,8 @@ void handleButtons(void){
 		if(buttonInput & GPIO_PIN_3){ //if released
 			
 		} else { //pressed
-			power += 1;
+			if(power+powerStep <= maxPower){power += powerStep;}
+			else{power = maxPower;}
 		}
 	}
 		
@@ -148,13 +154,9 @@ void handleButtons(void){
 	if(period < periodLimitLow){period = periodLimitLow;}
 	else if(period > periodLimitHigh){period = periodLimitHigh;}
 	
-	//limit power
-	if(power < 0){power = 0;}
-	else if(power > (period*powerLimitHighFrac/100)){power = (period*powerLimitHighFrac/100);}
-	
 	//set period and power in stm32f1xx_it
-	//TIM1->ARR = period;
-	//TIM1->CCR1 = power;
+	TIM2->ARR = period;
+	TIM2->CCR1 = period/2;
 }
 
 
@@ -197,13 +199,14 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	//__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 5); //set duty cycle
-	TIM1->ARR = period;
-	TIM1->CCR1 = power;
+	TIM1->ARR = 3600; //20khz
+	TIM1->CCR1 = 0;
 	__HAL_TIM_ENABLE_IT(&htim1, TIM_IT_UPDATE );
-	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);    //starts PWM on CH1 pin
-	//HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1); //starts PWM on CH1N pin
+	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);    //starts PWM on CH1 tim1 pin
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);    //starts PWM on CH1 tim2 pin
 	
   /* USER CODE END 2 */
 
@@ -339,6 +342,44 @@ static void MX_TIM1_Init(void)
   }
 
   HAL_TIM_MspPostInit(&htim1);
+
+}
+
+/* TIM2 init function */
+static void MX_TIM2_Init(void)
+{
+
+  TIM_MasterConfigTypeDef sMasterConfig;
+  TIM_OC_InitTypeDef sConfigOC;
+
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 0;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 27;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 13;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_ENABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  HAL_TIM_MspPostInit(&htim2);
 
 }
 

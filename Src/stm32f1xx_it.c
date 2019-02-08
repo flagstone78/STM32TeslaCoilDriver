@@ -226,7 +226,7 @@ void TIM1_UP_IRQHandler(void)
 	if(state == '0'){
 		TIM1->CCR1 = 0;
 	} else {
-		TIM1->CCR1 = musicBuffer[musicPage][musicIndex];
+		TIM1->CCR1 = musicBuffer[musicPage][musicIndex]+(power*2048)/(maxPower);
 		musicIndex++;
 		
 		if(musicIndex >= 64){
