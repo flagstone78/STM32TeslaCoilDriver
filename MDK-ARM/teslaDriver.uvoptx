@@ -154,7 +154,7 @@
           <Type>0</Type>
           <LineNumber>705</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134224838</Address>
+          <Address>134225006</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -170,17 +170,7 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>musicBuffer</ItemText>
-        </Ww>
-        <Ww>
-          <count>1</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>hUsbDeviceFS</ItemText>
-        </Ww>
-        <Ww>
-          <count>2</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>&amp;musicBuffer[64]</ItemText>
+          <ItemText>power</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

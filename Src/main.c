@@ -84,13 +84,13 @@ int periodLimitHigh = 60000; //144; //500  kHz
 const int periodReset = 32;
 
 const int maxPower = 128;
-const int powerStep = 8;
-const int powerReset = 0;
+const int powerStep = 2;
+const int powerReset = 8;
 
 int powerLimitHighFrac = 50; // max fraction (x/100) of the duty cycle to be high
 
 volatile int period = periodReset;
-volatile int power = powerReset;
+volatile int volume = powerReset;
 unsigned int buttonInput = 0xffffffff;
 unsigned int oldButtonInput = 0xffffffff;
 	
@@ -126,8 +126,8 @@ void handleButtons(void){
 		if(buttonInput & GPIO_PIN_6){ //if released
 			
 		} else { //pressed
-			if(power - powerStep > powerStep){power -= powerStep;}
-			else{power = powerStep;}
+			if(volume - powerStep > 0){volume -= powerStep;}
+			else{volume = 0;}
 		}
 	}
 	
@@ -135,7 +135,7 @@ void handleButtons(void){
 		if(buttonInput & GPIO_PIN_4){ //if released
 			
 		} else { //pressed
-			power = powerReset;
+			volume = powerReset;
 		}
 	}
 	
@@ -143,8 +143,8 @@ void handleButtons(void){
 		if(buttonInput & GPIO_PIN_3){ //if released
 			
 		} else { //pressed
-			if(power+powerStep <= maxPower){power += powerStep;}
-			else{power = maxPower;}
+			if(volume+powerStep <= maxPower){volume += powerStep;}
+			else{volume = maxPower;}
 		}
 	}
 		
@@ -204,6 +204,7 @@ int main(void)
 	//__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 5); //set duty cycle
 	TIM1->ARR = 3600; //20khz
 	TIM1->CCR1 = 0;
+	TIM1->CCR2 = 0; //keep audio off at startup
 	__HAL_TIM_ENABLE_IT(&htim1, TIM_IT_UPDATE );
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);    //starts PWM on CH1 tim1 pin
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);    //starts PWM on CH1 tim2 pin
@@ -214,10 +215,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
 	int delay;
-
-	/*for(int i = 0; i<musicBufferSize; i++){
-		musicBuffer[i] = i%255;
-	}*/
+	for(int i = 0; i<musicSamples; i += 1){
+		for(int j = 0; j<64; j++){musicBuffer[i][j] = 0;}
+		musicBuffer[i][0] = 255;
+	}
   while (1)
   {
 		delay = 10000;

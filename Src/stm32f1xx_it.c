@@ -40,8 +40,9 @@
 volatile unsigned int musicIndex = 0;
 volatile unsigned int musicPage = 0;
 
-volatile uint8_t state = '0';
-// 0 not connected
+volatile uint8_t state = 't';
+// 0 no sound
+// t test sound
 // a buffer 1
 // b buffer 2
 
@@ -226,7 +227,7 @@ void TIM1_UP_IRQHandler(void)
 	if(state == '0'){
 		TIM1->CCR1 = 0;
 	} else {
-		TIM1->CCR1 = musicBuffer[musicPage][musicIndex]+(power*2048)/(maxPower);
+		TIM1->CCR1 = ((musicBuffer[musicPage][musicIndex])*(volume*64))/(maxPower*32);
 		musicIndex++;
 		
 		if(musicIndex >= 64){
