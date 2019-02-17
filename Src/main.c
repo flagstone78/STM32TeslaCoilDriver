@@ -79,15 +79,13 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-int periodLimitLow = 25;     //2.88 MHz
-int periodLimitHigh = 60000; //144; //500  kHz
-const int periodReset = 32;
+int periodLimitLow = 144; //500khz 72;     //1 MHz
+int periodLimitHigh = 250; //500  kHz
+const int periodReset = 216;
 
-const int maxPower = 128;
+const int maxPower = 64;
 const int powerStep = 2;
-const int powerReset = 8;
-
-int powerLimitHighFrac = 50; // max fraction (x/100) of the duty cycle to be high
+const int powerReset = 2;
 
 volatile int period = periodReset;
 volatile int volume = powerReset;
@@ -216,8 +214,8 @@ int main(void)
 
 	int delay;
 	for(int i = 0; i<musicSamples; i += 1){
-		for(int j = 0; j<64; j++){musicBuffer[i][j] = 0;}
-		musicBuffer[i][0] = 255;
+		for(int j = 0; j<64; j++){musicBuffer[i][j] = 255;}
+		//musicBuffer[i][0] = 255;
 	}
   while (1)
   {

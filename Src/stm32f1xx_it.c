@@ -227,7 +227,8 @@ void TIM1_UP_IRQHandler(void)
 	if(state == '0'){
 		TIM1->CCR1 = 0;
 	} else {
-		TIM1->CCR1 = ((musicBuffer[musicPage][musicIndex])*(volume*64))/(maxPower*32);
+		unsigned short volatile val = musicBuffer[musicPage][musicIndex]*volume*141/(maxPower*10);//((unsigned int)(musicBuffer[musicPage][musicIndex])*((unsigned int)volume*141))/((unsigned int)maxPower*10);
+		TIM1->CCR1 = val;
 		musicIndex++;
 		
 		if(musicIndex >= 64){
