@@ -199,8 +199,10 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+	
 	//__HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 5); //set duty cycle
-	TIM1->ARR = 3600; //20khz
+	TIM1->PSC = 0;
+	TIM1->ARR = 3600; //60000;//300hz //3600; //20khz
 	TIM1->CCR1 = 0;
 	TIM1->CCR2 = 0; //keep audio off at startup
 	__HAL_TIM_ENABLE_IT(&htim1, TIM_IT_UPDATE );
@@ -300,7 +302,7 @@ static void MX_TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 0;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 32;
+  htim1.Init.Period = 3600;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
